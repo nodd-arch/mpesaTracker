@@ -26,12 +26,15 @@ object MpesaParser {
             val dateRegex = Regex("""on\s+(\d{1,2}/\d{1,2}/\d{2,4})""", RegexOption.IGNORE_CASE)
             val date = dateRegex.find(raw)?.groupValues?.get(1) ?: return null
 
-            // Time: pattern like "at 9:39 PM" - note it may be concatenated like "9:39 PMKSH"
-            val timeRegex = Regex("""at\s+(\d{1,2}:\d{2}\s*[AP]M)""", RegexOption.IGNORE_CASE)
-            val time = timeRegex.find(raw)?.groupValues?.get(1)?.trim() ?: return null
+            // Time: handles "9:39 PM", "9:39PM", "9:39 PMKSH" all correctly
+            val timeRegex = Regex("""at\s+(\d{1,2}:\d{2})\s*([AP]M)""", RegexOption.IGNORE_CASE)
+            val timeMatch = timeRegex.find(raw)
+            val time = if (timeMatch != null) {
+                "${timeMatch.groupValues[1]} ${timeMatch.groupValues[2].uppercase()}"
+            } else return null
 
-            // Amount: first KSH amount before "received"
-            val amountRegex = Regex("""KSH([\d,]+\.?\d*)\s*received""", RegexOption.IGNORE_CASE)
+            // Amount: KSH value immediately before "received" - handles "KSH25.00received" or "KSH25.00 received"
+            val amountRegex = Regex("""KSH\s*([\d,]+\.?\d*)\s*received""", RegexOption.IGNORE_CASE)
             val amountStr = amountRegex.find(raw)?.groupValues?.get(1)?.replace(",", "") ?: return null
             val amount = amountStr.toDoubleOrNull() ?: return null
 
@@ -39,17 +42,17 @@ object MpesaParser {
             val phoneRegex = Regex("""received from\s+(\d+)\s+""", RegexOption.IGNORE_CASE)
             val senderPhone = phoneRegex.find(raw)?.groupValues?.get(1) ?: return null
 
-            // Sender name: text after phone number, up to the period
-            val nameRegex = Regex("""received from\s+\d+\s+([A-Z\s]+)\.""", RegexOption.IGNORE_CASE)
+            // Sender name: text after phone number, up to the next period
+            val nameRegex = Regex("""received from\s+\d+\s+([A-Z][A-Z\s]+?)[\.\n]""", RegexOption.IGNORE_CASE)
             val senderName = nameRegex.find(raw)?.groupValues?.get(1)?.trim() ?: return null
 
             // New balance after "balance is KSH"
-            val balanceRegex = Regex("""balance is KSH([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
+            val balanceRegex = Regex("""balance is KSH\s*([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
             val balanceStr = balanceRegex.find(raw)?.groupValues?.get(1)?.replace(",", "") ?: "0"
             val newBalance = balanceStr.toDoubleOrNull() ?: 0.0
 
             // Transaction cost
-            val costRegex = Regex("""cost,\s*KSH([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
+            val costRegex = Regex("""cost,\s*KSH\s*([\d,]+\.?\d*)""", RegexOption.IGNORE_CASE)
             val costStr = costRegex.find(raw)?.groupValues?.get(1)?.replace(",", "") ?: "0"
             val transactionCost = costStr.toDoubleOrNull() ?: 0.0
 

@@ -56,3 +56,6 @@ google-services.json
 
 # Kotlin
 *.kotlin_module
+
+.gitignore
+pat

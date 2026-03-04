@@ -17,6 +17,20 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val transactions: StateFlow<List<MpesaTransaction>> = repo.getAllTransactions()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val unconfirmedTransactions: StateFlow<List<MpesaTransaction>> = repo.getUnconfirmedTransactions()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val confirmedTransactions: StateFlow<List<MpesaTransaction>> = repo.getConfirmedTransactions()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun confirmTransaction(id: Long) = viewModelScope.launch {
+        repo.setConfirmed(id, true)
+    }
+
+    fun unconfirmTransaction(id: Long) = viewModelScope.launch {
+        repo.setConfirmed(id, false)
+    }
+
     val invoices: StateFlow<List<Invoice>> = repo.getAllInvoices()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

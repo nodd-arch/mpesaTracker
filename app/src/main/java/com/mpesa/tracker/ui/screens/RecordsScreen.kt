@@ -41,7 +41,6 @@ fun RecordsScreen(viewModel: MainViewModel) {
 
     Box(Modifier.fillMaxSize().background(MpesaBackground)) {
         if (selectedDate != null) {
-            // Day detail view
             DayDetailView(
                 date = selectedDate!!,
                 transactions = viewModel.getTransactionsForDate(selectedDate!!),
@@ -49,7 +48,6 @@ fun RecordsScreen(viewModel: MainViewModel) {
             )
         } else {
             Column(Modifier.fillMaxSize()) {
-                // Header
                 Row(
                     Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -69,11 +67,7 @@ fun RecordsScreen(viewModel: MainViewModel) {
                     LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         items(distinctDates) { date ->
                             val dayTx = viewModel.getTransactionsForDate(date)
-                            DayCard(
-                                date = date,
-                                transactions = dayTx,
-                                onClick = { selectedDate = date }
-                            )
+                            DayCard(date = date, transactions = dayTx, onClick = { selectedDate = date })
                         }
                         item { Spacer(Modifier.height(80.dp)) }
                     }
@@ -141,7 +135,6 @@ fun DayDetailView(date: String, transactions: List<MpesaTransaction>, onBack: ()
     val total = transactions.sumOf { it.amount }
 
     Column(Modifier.fillMaxSize()) {
-        // Top bar
         Row(
             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -158,7 +151,11 @@ fun DayDetailView(date: String, transactions: List<MpesaTransaction>, onBack: ()
 
         LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             items(transactions) { tx ->
-                TransactionCard(tx, onClick = { selectedTx = tx })
+                if (tx.isConfirmed) {
+                    ConfirmedTransactionCard(tx, onTap = { selectedTx = tx }, onLongPress = {})
+                } else {
+                    UnconfirmedTransactionCard(tx, onTap = { selectedTx = tx }, onConfirm = {})
+                }
             }
             item { Spacer(Modifier.height(80.dp)) }
         }
@@ -176,7 +173,7 @@ fun ExportDialog(
     onExportRange: (Long, Long) -> Unit,
     context: Context
 ) {
-    var mode by remember { mutableStateOf(0) } // 0=choose, 1=range
+    var mode by remember { mutableStateOf(0) }
     var startDate by remember { mutableStateOf<Long?>(null) }
     var endDate by remember { mutableStateOf<Long?>(null) }
 
@@ -188,20 +185,13 @@ fun ExportDialog(
                 if (mode == 0) {
                     Text("Choose export type:", color = TextSecondary, fontSize = 14.sp)
                     Spacer(Modifier.height(16.dp))
-                    Button(
-                        onClick = onExportAll,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = MpesaGreen)
-                    ) {
+                    Button(onClick = onExportAll, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = MpesaGreen)) {
                         Icon(Icons.Default.Download, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
                         Text("Export All")
                     }
                     Spacer(Modifier.height(8.dp))
-                    OutlinedButton(
-                        onClick = { mode = 1 },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    OutlinedButton(onClick = { mode = 1 }, modifier = Modifier.fillMaxWidth()) {
                         Icon(Icons.Default.DateRange, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
                         Text("Select Date Range")
@@ -222,16 +212,12 @@ fun ExportDialog(
                         enabled = startDate != null,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = MpesaGreen)
-                    ) {
-                        Text("Export PDF")
-                    }
+                    ) { Text("Export PDF") }
                 }
             }
         },
         confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
-        }
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
     )
 }
 

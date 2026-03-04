@@ -10,6 +10,9 @@ class AppRepository(db: AppDatabase) {
     private val invoiceDao = db.invoiceDao()
 
     fun getAllTransactions(): Flow<List<MpesaTransaction>> = txDao.getAllTransactions()
+    fun getUnconfirmedTransactions(): Flow<List<MpesaTransaction>> = txDao.getUnconfirmed()
+    fun getConfirmedTransactions(): Flow<List<MpesaTransaction>> = txDao.getConfirmed()
+    suspend fun setConfirmed(id: Long, confirmed: Boolean) = txDao.setConfirmed(id, confirmed)
     fun getTransactionsBetween(start: Long, end: Long): Flow<List<MpesaTransaction>> =
         txDao.getTransactionsBetween(start, end)
     suspend fun getAllTransactionsSync(): List<MpesaTransaction> = txDao.getAllTransactionsSync()
