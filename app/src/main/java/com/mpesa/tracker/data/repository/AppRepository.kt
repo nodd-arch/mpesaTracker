@@ -12,7 +12,8 @@ class AppRepository(db: AppDatabase) {
     fun getAllTransactions(): Flow<List<MpesaTransaction>> = txDao.getAllTransactions()
     fun getUnconfirmedTransactions(): Flow<List<MpesaTransaction>> = txDao.getUnconfirmed()
     fun getConfirmedTransactions(): Flow<List<MpesaTransaction>> = txDao.getConfirmed()
-    suspend fun setConfirmed(id: Long, confirmed: Boolean) = txDao.setConfirmed(id, confirmed)
+    suspend fun setConfirmed(id: Long, confirmed: Boolean) =
+        txDao.setConfirmed(id, confirmed, if (confirmed) System.currentTimeMillis() else 0L)
     fun getTransactionsBetween(start: Long, end: Long): Flow<List<MpesaTransaction>> =
         txDao.getTransactionsBetween(start, end)
     suspend fun getAllTransactionsSync(): List<MpesaTransaction> = txDao.getAllTransactionsSync()

@@ -69,10 +69,12 @@ fun MessagesScreen(viewModel: MainViewModel) {
                 if (confirmed.isNotEmpty()) {
                     item {
                         Spacer(Modifier.height(4.dp))
+                        Divider(color = Color(0xFFDDDDDD), thickness = 1.dp)
+                        Spacer(Modifier.height(4.dp))
                         SectionHeader(
                             title = "Confirmed Purchases",
                             subtitle = "${confirmed.size} handed over  •  Long press to reverse",
-                            color = MpesaGreen
+                            color = Color(0xFF999999)
                         )
                     }
                     items(confirmed, key = { it.id }) { tx ->
@@ -215,13 +217,10 @@ fun ConfirmedTransactionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .combinedClickable(
-                onClick = onTap,
-                onLongClick = onLongPress
-            ),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FFF4)),
+            .combinedClickable(onClick = onTap, onLongClick = onLongPress),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF2F2F2)),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(1.dp)
+        elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Row(
             Modifier.padding(16.dp).fillMaxWidth(),
@@ -231,14 +230,14 @@ fun ConfirmedTransactionCard(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(MpesaGreen.copy(0.18f)),
+                    .background(Color(0xFFD0D0D0)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.CheckCircle,
-                    contentDescription = null,
-                    tint = MpesaGreen,
-                    modifier = Modifier.size(26.dp)
+                Text(
+                    tx.senderName.split(" ").take(2).map { it.firstOrNull() ?: ' ' }.joinToString(""),
+                    color = Color(0xFF888888),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
                 )
             }
             Spacer(Modifier.width(14.dp))
@@ -247,27 +246,36 @@ fun ConfirmedTransactionCard(
                     tx.senderName.split(" ").take(2).joinToString(" "),
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = TextPrimary
+                    color = Color(0xFF999999)
                 )
                 Text(
                     "${tx.date} • ${tx.time}",
                     fontSize = 12.sp,
-                    color = TextSecondary
+                    color = Color(0xFFBBBBBB)
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     "+${MpesaParser.formatAmount(tx.amount)}",
-                    color = MpesaGreen,
+                    color = Color(0xFF999999),
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
-                Text(
-                    "✓ Handed Over",
-                    fontSize = 10.sp,
-                    color = MpesaGreen.copy(0.7f),
-                    fontWeight = FontWeight.SemiBold
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color(0xFFAAAAAA),
+                        modifier = Modifier.size(11.dp)
+                    )
+                    Spacer(Modifier.width(3.dp))
+                    Text(
+                        "Done",
+                        fontSize = 10.sp,
+                        color = Color(0xFFAAAAAA),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }

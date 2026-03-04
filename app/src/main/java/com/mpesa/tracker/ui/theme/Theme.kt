@@ -34,7 +34,7 @@ private val LightColorScheme = lightColorScheme(
 fun MpesaTrackerTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = LightColorScheme,
-        typography = Typography(),
+        typography = AppTypography,
         content = content
     )
 }

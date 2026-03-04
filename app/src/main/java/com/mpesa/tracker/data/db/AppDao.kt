@@ -26,13 +26,13 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions ORDER BY timestamp DESC")
     suspend fun getAllTransactionsSync(): List<MpesaTransaction>
 
-    @Query("UPDATE transactions SET isConfirmed = :confirmed WHERE id = :id")
-    suspend fun setConfirmed(id: Long, confirmed: Boolean)
+    @Query("UPDATE transactions SET isConfirmed = :confirmed, confirmedAt = :confirmedAt WHERE id = :id")
+    suspend fun setConfirmed(id: Long, confirmed: Boolean, confirmedAt: Long = 0L)
 
     @Query("SELECT * FROM transactions WHERE isConfirmed = 0 ORDER BY timestamp DESC")
     fun getUnconfirmed(): Flow<List<MpesaTransaction>>
 
-    @Query("SELECT * FROM transactions WHERE isConfirmed = 1 ORDER BY timestamp DESC")
+    @Query("SELECT * FROM transactions WHERE isConfirmed = 1 ORDER BY confirmedAt DESC")
     fun getConfirmed(): Flow<List<MpesaTransaction>>
 
     @Query("DELETE FROM transactions WHERE id = :id")
