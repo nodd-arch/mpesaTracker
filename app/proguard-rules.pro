@@ -1,0 +1,3 @@
+-keep class com.mpesa.tracker.** { *; }
+-keep class com.itextpdf.** { *; }
+-dontwarn com.itextpdf.**
