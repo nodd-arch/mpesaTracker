@@ -18,6 +18,6 @@ data class MpesaTransaction(
     val rawMessage: String,          // original SMS text
     val timestamp: Long,             // System.currentTimeMillis() for sorting
     val simSlot: Int,                // 0 or 1
-    val isConfirmed: Boolean = false,// whether purchase has been confirmed/handed over
+    val isConfirmed: Boolean = false,
     val confirmedAt: Long = 0L
 )

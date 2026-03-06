@@ -110,6 +110,43 @@ object PdfExporter {
         }
     }
 
+    fun saveOrShare(context: Context, file: File) {
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+
+        // Save to public Downloads via MediaStore (Android 10+) or direct copy (older)
+        val savedPath = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            val values = android.content.ContentValues().apply {
+                put(android.provider.MediaStore.Downloads.DISPLAY_NAME, file.name)
+                put(android.provider.MediaStore.Downloads.MIME_TYPE, "application/pdf")
+                put(android.provider.MediaStore.Downloads.IS_PENDING, 1)
+            }
+            val resolver = context.contentResolver
+            val destUri = resolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+            destUri?.let {
+                resolver.openOutputStream(it)?.use { out -> file.inputStream().copyTo(out) }
+                values.clear()
+                values.put(android.provider.MediaStore.Downloads.IS_PENDING, 0)
+                resolver.update(it, values, null, null)
+                "Downloads/${file.name}"
+            }
+        } else {
+            val dest = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), file.name)
+            file.copyTo(dest, overwrite = true)
+            dest.absolutePath
+        }
+
+        // Show chooser with save confirmation toast
+        android.widget.Toast.makeText(context, "Saved to $savedPath", android.widget.Toast.LENGTH_LONG).show()
+
+        // Also open share sheet so they can send it too
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "application/pdf"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(intent, "PDF saved — share too?"))
+    }
+
     fun sharePdf(context: Context, file: File) {
         val uri = FileProvider.getUriForFile(
             context,
